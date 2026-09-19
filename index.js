@@ -1,5 +1,5 @@
 const express = require('express');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const cookie = require('cookie');
 
 const app = express();
@@ -7,14 +7,11 @@ const PORT = process.env.PORT || 8080;
 
 const USER_COOKIE = process.env.ZENIX_COOKIE || 'session=a14673dd-da6e-437d-afb8-3f86e72a33ec; cf_clearance=y7hxCgnDQFhhKrNjZifU6y0oh1P9o5vcIXrzMCfS2UU-1789802055-1.2.1.1-I_tcS0WrUlu1DF_.9rlB2SuqLl7X.M3zZSInkP_mB45DStU42Wr943AGXxbiTsKTp8dOqs0EfirsbKVxa2HVhq9SYUUZsCq8RwQ6FckysMsrQ116GZxslZO10EaeK55InrAYWHK49eI_YaS8GhYakwcOsLWrmcsw126Dg9teW_ghevkjvL9qReroc.cO7bHm0TfgBn38sVyPmGp.rb3qEDIyy9mrvQGN9A4Aor25rX5fhb3RPpKAypTo0iT51EmwmEZh3HzsUXu9h.XIWC8WGQENskFJUbFUg.7oiybGMJrw_P03QYeYMFxPeEA6cU5Bpvsp2KS5NdR4tVwLi5fRBAmBiXyXaKOmFk9zRfXufdSvrfOpiz7Crj8qUwguG31_FCeKYEFeauRjpW79vKMTYg';
 const USER_AGENT = process.env.USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0';
-const CHROMIUM_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium';
 
 let browser = null;
 let page = null;
 let pageTitle = 'Not started';
 let pageUrl = 'About:blank';
-let lastScreenshot = null;
-let lastAfkEvent = null;
 let stats = {
   probeCount: 0,
   afkCount: 0,
@@ -27,7 +24,7 @@ function log(msg) {
   const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
   console.log(line);
   stats.recentLogs.push(line);
-  if (stats.recentLogs.length > 20) {
+  if (stats.recentLogs.length > 25) {
     stats.recentLogs.shift();
   }
 }
@@ -36,7 +33,7 @@ function log(msg) {
 app.get('/', (req, res) => {
   res.json({
     status: 'running',
-    mode: 'headless-browser (Chromium)',
+    mode: 'headless-browser (Official Puppeteer Chrome)',
     service: 'zenix-afk-service',
     uptime: `${Math.floor(process.uptime())}s`,
     pageTitle,
@@ -47,7 +44,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// 2. 实时画面截图预览（方便在手机/电脑上随时查看云端挂机画面）
+// 2. 实时画面截图预览（手机或电脑浏览器直接访问查看云端页面）
 app.get('/screenshot', async (req, res) => {
   try {
     if (page) {
@@ -72,9 +69,9 @@ app.listen(PORT, () => {
 // 3. 启动无头浏览器并挂机
 async function startBrowser() {
   try {
-    log('Launching Headless Chromium...');
-    browser = await puppeteer.launch({
-      executablePath: CHROMIUM_PATH,
+    log('Launching Headless Chrome via Puppeteer...');
+    
+    const launchOptions = {
       headless: 'new',
       args: [
         '--no-sandbox',
@@ -86,7 +83,10 @@ async function startBrowser() {
         '--window-size=1280,800'
       ],
       defaultViewport: { width: 1280, height: 800 }
-    });
+    };
+
+    browser = await puppeteer.launch(launchOptions);
+    log('Headless Chrome successfully launched!');
 
     page = await browser.newPage();
     await page.setUserAgent(USER_AGENT);
