@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# 安装 Puppeteer 运行 Chrome 所需的所有系统依赖动态库
+# 安装 Chrome 运行依赖
 RUN apt-get update \
     && apt-get install -y \
        wget gnupg ca-certificates procps libxss1 \
@@ -12,12 +12,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
-    PUPPETEER_CACHE_DIR=/app/.cache/puppeteer
+    PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
+RUN npx puppeteer browsers install chrome
 
 COPY . .
 

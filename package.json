@@ -1,9 +1,10 @@
 {
   "name": "zenix-afk-service",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Zenix AFK Headless Browser Service for Render",
   "main": "index.js",
   "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome",
     "start": "node index.js"
   },
   "dependencies": {

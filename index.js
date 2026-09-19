@@ -1,6 +1,7 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const cookie = require('cookie');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -44,7 +45,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// 2. 实时画面截图预览（手机或电脑浏览器直接访问查看云端页面）
+// 2. 实时画面截图预览（直接访问查看云端页面）
 app.get('/screenshot', async (req, res) => {
   try {
     if (page) {
@@ -66,9 +67,22 @@ app.listen(PORT, () => {
   log(`Web server listening on port ${PORT}`);
 });
 
+// 确保 Chrome 二进制已安装
+function ensureChromeInstalled() {
+  try {
+    log('Checking Chrome browser installation...');
+    execSync('npx puppeteer browsers install chrome', { stdio: 'inherit' });
+    log('Chrome check completed.');
+  } catch (e) {
+    log(`Chrome install check warning: ${e.message}`);
+  }
+}
+
 // 3. 启动无头浏览器并挂机
 async function startBrowser() {
   try {
+    ensureChromeInstalled();
+
     log('Launching Headless Chrome via Puppeteer...');
     
     const launchOptions = {
@@ -160,10 +174,9 @@ async function startBrowser() {
 
   } catch (err) {
     log(`❌ Browser error: ${err.message}`);
-    // 15 秒后尝试重试
     setTimeout(startBrowser, 15000);
   }
 }
 
-// 延迟 3 秒启动无头浏览器
-setTimeout(startBrowser, 3000);
+// 延迟 2 秒启动无头浏览器
+setTimeout(startBrowser, 2000);
