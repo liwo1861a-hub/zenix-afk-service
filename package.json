@@ -1,13 +1,14 @@
 {
   "name": "zenix-afk-service",
-  "version": "1.0.0",
-  "description": "Zenix AFK Service",
+  "version": "2.0.0",
+  "description": "Zenix AFK Headless Browser Service for Render",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "axios": "^1.7.9",
-    "express": "^4.21.2"
+    "cookie": "^1.0.2",
+    "express": "^4.21.2",
+    "puppeteer-core": "^24.4.0"
   }
 }
